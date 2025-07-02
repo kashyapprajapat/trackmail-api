@@ -1,0 +1,18 @@
+{
+  "name": "mailchampapi",
+  "version": "1.0.0",
+  "description": "email open tracking api.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo test"
+  },
+  "author": "kashyap prajapati",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mongoose": "^8.16.1"
+  }
+}
