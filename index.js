@@ -5,6 +5,9 @@ const { v4: uuidv4 } = require('uuid');
 const Tracking = require('./model/trackschema');
 const os = require('os');
 const mongoose = require('mongoose');
+const { error, trace } = require('console');
+const fs = require('fs');
+const path = require('path');
 
 require('dotenv').config();
 
@@ -39,6 +42,38 @@ app.post('/send-mail', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// Track mail
+app.get('/track-mail/:id',async (req,res)=>{
+   const { id } = req.params('id');
+   const userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+   if(!id) return res.json({error:"Tracking id is required"});
+   try {
+    const Track = await Tracking.findOne({trackingId:id});
+    if(!Track) return res.json({error : "Tracking Id not Found"});
+
+
+    if(!Track.userIp.includes(userIP)){
+        Track.userIp.push(userIP)
+        Track.opens++
+        await Track.save()
+    }
+
+    const imagePath = path.join(__dirname, 'email.png');
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    return res.sendFile(imagePath);
+
+
+   } catch (error) {
+    console.log(error);
+    return res.json({error:"Failed to Track Mail"});
+   }
+
+})
 
 // Ping endpoint
 app.get('/ping', (req, res) => {
@@ -592,8 +627,6 @@ app.get('/health', async (req, res) => {
     res.status(500).json({ error: 'Health check failed', details: error.message });
   }
 });
-
-
 
 
 // Start server
